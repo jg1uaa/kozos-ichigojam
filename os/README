@@ -1,0 +1,73 @@
+[Japanese]
+
+● 概要
+
+「12ステップで作る 組込みOS自作入門」（坂井弘亮著／カットシステム）で
+H8/3069F向けに作られた組み込みOSであるKOZOS(http://kozos.jp/kozos/)を、
+IchigoJamで動作するようにしてみました。
+
+ただしブートローダーは無く、OS本体のみの移植とします。また、IchigoJamに
+限らず、RAMを4kB以上搭載したLPC1114であれば動作するはずです。
+
+
+● 開発環境
+
+OpenBSD-6.2/amd64において、以下のパッケージを使用しました。
+
+	gmake-4.2.1
+	arm-none-eabi-binutils-2.27p0
+	arm-none-eabi-gcc-linaro-6.3.2017.02p2
+	arm-none-eabi-gdb-7.9.1p2
+	arm-none-eabi-newlib-2.2.0.1p1
+	lpc21isp-1.97
+
+OpenBSD以外のPC-UNIXであっても、これらに類似したツールチェインを用意できれば
+使用できるものと思われます。
+
+その他必要なもの（テキストエディタやシリアルコンソール用の通信ソフト等）に
+ついては、適宜用意してください。なお、シリアルコンソール用の通信ソフトは
+lpc21ispで代用することが可能です。
+
+
+● 構築方法
+
+KOZOS自体は、gmakeで構築可能です。
+kozos.elf, kozos, kozos.hexが得られます。
+
+
+● 実行方法
+
+lpc21ispを使用し、Intel hexイメージ(kozos.hex)をLPC1114に書き込んでください。
+
+	$ lpc21isp kozos.hex /dev/ttyU0 38400 4000
+	lpc21isp version 1.97
+	File kozos.hex:
+	        loaded...
+	Start Address = 0x00000200
+	        converted to binary format...
+	        image size : 4596
+	Image size : 4596
+	Synchronizing (ESC to abort)..... OK
+	Read bootcode version: 0
+	7
+	Read part ID: LPC1114.../301, 32 kiB FLASH / 8 kiB SRAM (0x0444102B)
+	Will start programming at Sector 1 if possible, and conclude with Sect
+	or 0 to ensure that checksum is written last.
+	Erasing sector 0 first, to invalidate checksum. OK
+	Sector 1: ...............
+	Sector 0: ............................................................
+	..................................
+	Download Finished... taking 2 seconds
+	Now launching the brand new code
+	$
+	
+LPC1114への書き込み後、ボードをリセットすることでKOZOSが起動します。
+
+	$ lpc21isp -termonly /dev/null /dev/ttyU0 38400 4000
+	lpc21isp version 1.97
+	Terminal started (press Escape to abort)
+	
+	kozos boot succeed!
+	command> echo hello
+	 hello
+	command>
